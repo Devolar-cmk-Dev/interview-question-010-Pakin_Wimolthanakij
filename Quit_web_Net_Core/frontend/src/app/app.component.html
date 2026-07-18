@@ -1,0 +1,77 @@
+<div class="container">
+  
+  @if (examState() === 'start') {
+    <div class="start-page">
+      <h2>ระบบทดสอบความรู้ (IT 10)</h2>
+      <p>คุณมีเวลาทำข้อสอบทั้งหมด <strong>30 นาที</strong></p>
+      <p style="color: #dc3545; font-size: 0.9em;">*หากหมดเวลาระบบจะทำการส่งข้อสอบอัตโนมัติ</p>
+      
+      <div class="input-group">
+        <label>ชื่อ-สกุล: </label>
+        <input type="text" [(ngModel)]="examineeName" placeholder="กรุณากรอกชื่อก่อนเริ่มทำข้อสอบ">
+      </div>
+      
+      <div class="action-buttons">
+        <button class="btn" (click)="startExam()">เริ่มทำข้อสอบ</button>
+        <button class="btn btn-danger" (click)="cancelExam()">ยกเลิก</button>
+      </div>
+    </div>
+  }
+
+  @if (examState() === 'exam' || examState() === 'result') {
+    <div class="header">
+      @if (examState() === 'exam') {
+        IT 10-1
+        <span [style.color]="timeLeft() <= 300 ? '#ffc107' : '#fff'" style="float: right; margin-right: 15px;">
+          เหลือเวลา: {{ formattedTime() }}
+        </span>
+      } @else {
+        IT 10-2
+      }
+    </div>
+    
+    <div class="content">
+      <div class="input-group-exam">
+        <label style="font-weight: bold; font-size: 1.1rem; margin-right: 10px;">ผู้สอบ: </label>
+        <input type="text" [value]="examineeName()" disabled style="padding: 5px 10px; font-size: 1rem; border-radius: 4px; border: 1px solid #ccc;">
+      </div>
+      
+      <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 25px;">
+
+      @if (examState() === 'exam') {
+        <div>
+          @for (q of paginatedQuestions(); track q.Id) {
+            <div class="question-block">
+              <p><strong>{{ q.QuestionText }}</strong></p>
+              <label><input type="radio" [name]="'q'+q.Id" (change)="setAnswer(q.Id, 1)" [checked]="answers()[q.Id] === 1"> {{ q.Choice1 }}</label><br>
+              <label><input type="radio" [name]="'q'+q.Id" (change)="setAnswer(q.Id, 2)" [checked]="answers()[q.Id] === 2"> {{ q.Choice2 }}</label><br>
+              <label><input type="radio" [name]="'q'+q.Id" (change)="setAnswer(q.Id, 3)" [checked]="answers()[q.Id] === 3"> {{ q.Choice3 }}</label><br>
+              <label><input type="radio" [name]="'q'+q.Id" (change)="setAnswer(q.Id, 4)" [checked]="answers()[q.Id] === 4"> {{ q.Choice4 }}</label><br>
+            </div>
+          }
+        </div>
+
+        <div class="pagination-controls">
+          <button class="btn" (click)="changePage(-1)" [disabled]="currentPage() === 1">ย้อนกลับ</button>
+          <span class="page-info">หน้า {{ currentPage() }} / {{ totalPages() }}</span>
+          <button class="btn" (click)="changePage(1)" [disabled]="currentPage() === totalPages()">ถัดไป</button>
+        </div>
+
+        <div class="bottom-actions">
+          @if (currentPage() === totalPages()) {
+            <button class="btn" (click)="submitQuiz(false)">ส่งข้อสอบ</button>
+          }
+        </div>
+      }
+
+      @if (examState() === 'result') {
+        <div class="bottom-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <button class="btn" (click)="resetQuiz()">กลับหน้าแรก</button>
+          <span class="result-text" style="display: block;">
+            คุณ {{ result()?.name }} สอบได้คะแนน : {{ result()?.score }} / {{ result()?.total }}
+          </span>
+        </div>
+      }
+    </div>
+  }
+</div>
